@@ -12,7 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Command\" />
       <Folder Include="Logs\" />
     </ItemGroup>
 
