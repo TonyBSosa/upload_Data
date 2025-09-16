@@ -1,31 +1,44 @@
 using Microsoft.AspNetCore.Mvc;
-using YourApp.Services;
-using YourApp.Models;
+using UploadData.Services;
+using UploadData.Models;
 
-namespace YourApp.Controllers;
+namespace UploadData.Controllers;
 
 [ApiController]
 [Route("api/upload")]
+[Consumes("multipart/form-data")] // <- aplica para todas las acciones del controller
 public class UploadController : ControllerBase
 {
+    private readonly IPlanMateriaService _planService;
     private readonly IUploadService _uploadService;
 
-    public UploadController(IUploadService uploadService)
+    public UploadController(IPlanMateriaService planService, IUploadService uploadService)
     {
+        _planService = planService;
         _uploadService = uploadService;
     }
 
     [HttpPost("carga-academica")]
-    public async Task<ActionResult<UploadResult>> SubirCargaAcademica(IFormFile archivo)
+    [ProducesResponseType(typeof(UploadResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<UploadResult>> SubirCargaAcademica(
+        [FromForm] UploadFileRequest form, CancellationToken ct)
     {
-        var resultado = await _uploadService.ProcesarArchivoAsync(archivo, "Carga Académica");
+        if (form.Archivo is null || form.Archivo.Length == 0)
+            return BadRequest("Archivo vacío.");
+
+        var resultado = await _planService.ProcesarExcelAsync(form.Archivo, ct);
         return Ok(resultado);
     }
 
     [HttpPost("estudiantes")]
-    public async Task<ActionResult<UploadResult>> SubirEstudiantes(IFormFile archivo)
+    [ProducesResponseType(typeof(UploadResult), StatusCodes.Status200OK)]
+    public async Task<ActionResult<UploadResult>> SubirEstudiantes(
+        [FromForm] UploadFileRequest form, CancellationToken ct)
     {
-        var resultado = await _uploadService.ProcesarArchivoAsync(archivo, "Estudiantes");
+        if (form.Archivo is null || form.Archivo.Length == 0)
+            return BadRequest("Archivo vacío.");
+
+        var resultado = await _uploadService.ProcesarArchivoAsync(form.Archivo, "Estudiantes", ct);
         return Ok(resultado);
     }
 }

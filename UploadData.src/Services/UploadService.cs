@@ -1,45 +1,28 @@
-using System.Text;
-using YourApp.Models;
+using Microsoft.AspNetCore.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using UploadData.Models;
 
-namespace YourApp.Services;
-
-public class UploadService : IUploadService
+namespace UploadData.Services
 {
-    private readonly string logDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Logs");
-    private readonly string logFilePath;
-
-    public UploadService()
+     public class UploadService : IUploadService
     {
-        Directory.CreateDirectory(logDirectory);
-
-        logFilePath = Path.Combine(logDirectory, "uploads.log");
-    }
-
-    public async Task<UploadResult> ProcesarArchivoAsync(IFormFile archivo, string tipo)
-    {
-        if (archivo == null || archivo.Length == 0)
-            throw new ArgumentException("El archivo está vacío");
-
-        using var ms = new MemoryStream();
-        await archivo.CopyToAsync(ms);
-        var tamañoKb = ms.Length / 1024;
-
-        await GuardarLogAsync(tipo, archivo.FileName, tamañoKb);
-
-        return new UploadResult
+        public Task<UploadResult> ProcesarArchivoAsync(
+            IFormFile archivo,
+            string tipo,
+            CancellationToken ct = default)
         {
-            TipoArchivo = tipo,
-            TamañoKb = tamañoKb,
-            Mensaje = "Archivo procesado correctamente"
-        };
-    }
+            var res = new UploadResult
+            {
+                Rows       = (archivo != null && archivo.Length > 0) ? 1 : 0,
+                Inserted   = 0,
+                Updated    = 0,
+                TipoArchivo = tipo,
+                TamañoKb    = (archivo != null) ? archivo.Length / 1024 : 0,
+                Mensaje     = "Archivo recibido"
+            };
 
-    private async Task GuardarLogAsync(string tipo, string nombreArchivo, long tamañoKb)
-    {
-        var logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}" +
-                       $" | Tipo: {tipo} | " +
-                       $"Archivo: {nombreArchivo} | " +
-                       $"Tamaño: {tamañoKb} KB{Environment.NewLine}";
-        await File.AppendAllTextAsync(logFilePath, logEntry, Encoding.UTF8);
+            return Task.FromResult(res);
+        }
     }
 }

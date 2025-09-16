@@ -1,9 +1,16 @@
 using Microsoft.AspNetCore.Http;
-using YourApp.Models;
+using System.Threading;
+using System.Threading.Tasks;
+using UploadData.Models;
 
-namespace YourApp.Services;
-
-public interface IUploadService
+namespace UploadData.Services
 {
-    Task<UploadResult> ProcesarArchivoAsync(IFormFile archivo, string tipo);
+    public interface IUploadService
+    {
+        Task<UploadResult> ProcesarArchivoAsync(
+            IFormFile archivo,
+            string tipo,
+            CancellationToken ct = default
+        );
+    }
 }
