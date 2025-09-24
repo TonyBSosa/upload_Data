@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Http;
-using YourApp.Models;
-
-namespace YourApp.Services;
+namespace UploadData.Services;
 
 public interface IUploadService
 {
-    Task<UploadResult> ProcesarArchivoAsync(IFormFile archivo, string tipo);
+    Task<UploadResult> ProcessExcelToStagingAsync(
+        string filePath, string? sheet, int? semestre, CancellationToken ct);
 }
+
+public record UploadResult(int RowsRead, int RowsInserted, Guid BatchId);
